@@ -105,6 +105,12 @@ I Claude: tilføj en marketplace med adressen `KennethEU/kennethsplugins` (se ho
 
 ## Changelog
 
+### v2.5.0 (oktober 2026)
+- To adskilte elevpakker som standard: `Elevpakke_[Spil]_Uden_AI.docx` (intro, bilag, rollekort og beslutningsskema uden koder eller AI-henvisninger, til skærmfrie lektioner) og `Elevpakke_[Spil]_Med_AI.docx` (samme indhold med "Rådgiverkode: XXXX" på rollekortene). De hedder "Uden AI" og "Med AI-rådgiver", ikke "analog" og "digital", og ligger altid som to separate Word-filer
+- Rollekort er dobbeltsidet A4: forsiden har topbanner, nøgletalsbjælke med tre felter, mål, baggrund, holdning, initiativkrav, nummererede argumenter, dilemmaer og en "Fortroligt notat"-boks, og bagsiden har fagbegreber, faseguide og forhandlingsnoter med notelinjer
+- Én samlet lærerfil: `Laererpakke_[Spil]_Samlet.docx` med lærerguide og cheatsheet
+- Opdateret i `casespil-rollekort`, `casespil-projektregler`, `casespil-digitale-tillaeg` og `casespil-laererguide`. `casespil-rollekort/references/template-kode.md` har afprøvet kode til begge elevpakker og lærerpakken og en kontrol (ingen koder i Uden AI, én kode pr. rolle i Med AI, ens indhold, præcis 2 sider pr. rollekort)
+
 ### v2.4.1 (oktober 2026)
 - Nye regler efter gennemgang af, hvad `fjord2026` bruges til i casespil.dk: nøglen ligger aldrig sammen med det, den låser, et offentligt id (proxyens `appId`) er ikke en kode og kaldes `APP_ID`, hjemmelavet kryptering og SHA-256-tjek er ingen lås, og gamle lærerkataloger og lærer-pinkoder fjernes fra elevsiderne, når cockpittet overtager
 - Opdateret i `casespil-projektregler` (tillæg 12 til 14), `casespil-digitale-tillaeg` (sikkerhedsafsnit og tjekliste) og `references/teknik.md`

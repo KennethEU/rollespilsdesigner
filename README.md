@@ -68,6 +68,9 @@ Hvert plugin har en `evals/`-mappe med triggertests, der tjekker, at den rigtige
 
 ## Changelog
 
+### casespilsdesigner 2.5.0 (oktober 2026)
+- To adskilte elevpakker (Uden AI og Med AI-rådgiver), dobbeltsidede rollekort (forside og bagside) og én samlet lærerpakke. Se plugin-READMEen.
+
 ### casespilsdesigner 2.4.1 (oktober 2026)
 - Regler om nøgler og offentlige id'er: nøglen ligger aldrig sammen med det, den låser, `appId` er ikke en kode, ingen hjemmelavet kryptering, og gamle lærerkataloger ryddes. Se plugin-READMEen.
 

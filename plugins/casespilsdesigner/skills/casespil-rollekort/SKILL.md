@@ -1,6 +1,6 @@
 ---
 name: casespil-rollekort
-description: "Producerer rollekort, livskort, beslutningskort og elevintroduktioner til casespil (også kaldet rollespil) som printklare Word-dokumenter (.docx) med Node.js. Brug når læreren siger rollekort, elevintroduktion, \"til printeren\", print, word eller docx i forbindelse med casespil, rollespil eller simulation. Normalversionen er standard; støtte og stærk laves kun efter ønske. Brug ikke til lærerguider (casespil-laererguide), cheatsheets (casespil-cheatsheet) eller dokumenter uden for casespil og rollespil."
+description: "Producerer to adskilte elevpakker (Uden AI og Med AI-rådgiver) med elevintroduktion, bilag, dobbeltsidede rollekort og beslutningsskema, og en samlet lærerpakke, til casespil (også kaldet rollespil) som printklare Word-dokumenter (.docx) med Node.js. Brug når læreren siger rollekort, elevintroduktion, \"til printeren\", print, word eller docx i forbindelse med casespil, rollespil eller simulation. Normalversionen er standard; støtte og stærk laves kun efter ønske. Brug ikke til lærerguider (casespil-laererguide), cheatsheets (casespil-cheatsheet) eller dokumenter uden for casespil og rollespil."
 allowed-tools:
   - Read
   - Glob
@@ -86,40 +86,42 @@ Elevintroduktion (medium margener):
 
 ## Rollekort-versioner
 
-**Normalversionen er standard og nok i de fleste tilfælde.** Læreren vil ofte have en simpel model, og nogle gange en AI-rådgiver som støtte til de svage elever. Lav kun støtte- og stærkversion, hvis læreren beder om det. Spørg gerne kort, om der skal være flere versioner, men antag ikke, at der skal.
+**Normalversionen er standard og nok i de fleste tilfælde.** Lav kun støtte- og stærkversion, hvis læreren beder om det. Spørg gerne kort, om der skal være flere versioner, men antag ikke, at der skal.
 
-### Normal (1 A4-side)
+### Normal: dobbeltsidet A4 (forside og bagside)
 
-Standardversion for hovedparten af klassen. Indeholder:
-- Farvet header med navn, titel, organisation, stemmer + evt. beføjelse og evt. rådgiverkode (se Rådgiverkode)
-- MÅL (1-2 sætninger)
+Et rollekort er altid 2 sider, trykt dobbeltsidet. Spillet foregår fysisk i klasselokalet med papir, dialog og forhandling, og bagsiden er arbejdsarket, eleven har foran sig under forhandlingen.
+
+**Forside (Rolle og mandat):**
+- Topbanner med navn, titel, organisation og evt. beføjelse. I varianten Med AI står rådgiverkoden i bannerets undertitel (se Rådgiverkode)
+- Nøgletalsbjælke (KPI-bar) med 3 felter: pulje, stemmer eller beføjelser, flertalskrav
+- MÅL (1 til 2 sætninger)
 - BAGGRUND (2. person: "Du er...")
-- HOLDNING (rollens faglige position)
-- VÆRDIER (2 stk.)
-- ARGUMENTER (3 stk., 1. person: "Mine data viser...")
+- HOLDNING OG VÆRDIER (rollens faglige position og 2 værdier)
+- INITIATIVKRAV OG MULIGHEDER
+- ARGUMENTER, nummereret (3 stk., 1. person: "Mine data viser...")
 - DILEMMAER (3 stk., 2. person: "Skal du...?", med krydsreferencer til andre roller)
-- SÆRLIG BEFØJELSE (hvis relevant)
-- TIP (2. person imperativ)
-- FASEGUIDE-TABEL (2 kolonner, farvet header, INGEN minuttal). Spilfaserne har samme navne, numre og rækkefølge som i elevintroduktion og lærerguide og, hvis de findes, webside og rådgiver. Intro og Debriefing må stå som før- og eftertrin uden fasenummer
+- SÆRLIG BEFØJELSE (hvis relevant) og evt. TIP (2. person imperativ)
+- **FORTROLIGT NOTAT:** en tydelig boks med skjult information (2. person: "Du ved at...")
 
-### Støtte (2 A4-sider, kun hvis ønsket)
+**Bagside (Taktik og arbejdsark):**
+- FAGBEGREBER I SPILLET (fx Eastons model, BCG, Ansoff) med en forklaring i dagligsprog
+- FASEGUIDE: opgaver i fase 1, 2 og 3 (2 kolonner, INGEN minuttal). Spilfaserne har samme navne, numre og rækkefølge som i elevintroduktion og lærerguide og, hvis de findes, webside og rådgiver. Intro og Debriefing må stå som før- og eftertrin uden fasenummer
+- DINE FORHANDLINGSNOTER med fysiske notelinjer til elevens blyant. Linjerne er rækker i en tabel med bundkant, ikke tomme afsnit (de smelter sammen til én linje)
 
-Alt fra normal-versionen PLUS:
-- **"Sig f.eks."** ved HVERT argument — konkret sætning eleven kan sige højt
-- **Alliancetabel** — Hvem? | Hvorfor? | Sig dette til dem
-- **Ordliste** — 3-4 fagbegreber med forklaring i dagligsprog
-- **Nødhjælpsboks** (GUL baggrund) — "HVIS DU ER I TVIVL:" + 2-3 universelle sætninger
-- **Forhandlingssætninger** (GRØN baggrund) — 3 nummererede sætninger
-- Faseguide med mere detalje
+Hvert rollekort fylder præcis 2 sider. Tjek det i preview og med sidetælling (se Template-kode).
 
-### Stærk (1 A4-side, kompakt, kun hvis ønsket)
+### Støtte (kun hvis ønsket)
 
-Slankere version:
-- Stikord i stedet for fuldtekst-argumenter
-- **Teori-tags** ved hvert argument (fx [NEO], [REAL], [LIB])
-- INGEN faseguide
-- Tom noteboks til egen strategi
-- Ingen "sig f.eks." eller alliancetabel
+Samme forside og bagside som normalversionen, plus på bagsiden (og om nødvendigt en ekstra side):
+- **"Sig f.eks."** ved HVERT argument: en konkret sætning eleven kan sige højt
+- **Alliancetabel:** Hvem? | Hvorfor? | Sig dette til dem
+- **Nødhjælpsboks** (GUL baggrund): "HVIS DU ER I TVIVL:" og 2 til 3 universelle sætninger
+- **Forhandlingssætninger** (GRØN baggrund): 3 nummererede sætninger
+
+### Stærk (kun hvis ønsket)
+
+Kompakt version: stikord i stedet for fuldtekst-argumenter, **teori-tags** ved hvert argument (fx [NEO], [REAL], [LIB]), ingen "sig f.eks." og ingen alliancetabel. Bagsiden bruges til notelinjer og fagbegreber. Stærk er den eneste version, der må være på 1 side, og kun hvis læreren beder om det.
 
 ---
 
@@ -137,26 +139,30 @@ Bland ALDRIG perspektiver inden for samme felt.
 
 ---
 
-## Rådgiverkode (kun hvis spillet har en AI-rådgiver)
+## Rådgiverkode (kun varianten Med AI)
 
-- Hver rolle har en 4-cifret kode. Den trykkes på forsiden af rollekortet i topbjælkens undertitel, fx "Fjord Outdoors bestyrelse | Leder mødet | Rådgiverkode: 2481".
+- Hver rolle har en 4-cifret kode. Den trykkes **kun i elevpakken Med AI** på forsiden af rollekortet i bannerets undertitel, fx "Fjord Outdoors bestyrelse | Leder mødet | Rådgiverkode: 2481".
+- **Elevpakken Uden AI indeholder ingen koder og ingen henvisninger til AI, rådgiver eller app.** Den er til 100 % skærmfrie lektioner. Ordene "rådgiver" og "AI" står ikke i filen, og ingen 4-cifret kode står på kortene.
 - Koden står **ikke** under en overskrift og er ikke en ny sektion. Rådgiveren læser kortets faste overskrifter, så sektionerne ændres ikke (se `casespil-digitale-tillaeg`).
-- Koderne kommer fra rådgiverens kodeliste. Rollekortene laves ofte, før rådgiveren findes: tilføj koden, når rådgiveren er bygget, og generér kortene igen. Koden på kortet, i lærervinduet og (som hash) i rådgiveren skal være den samme.
-- Koden står kun på sin egen rolles kort, aldrig i elevintroduktion eller fælles bilag. Rådgiverens fejlbesked og webtekster må kun skrive "fra dit kort", hvis koden står der.
+- Koderne kommer fra rådgiverens kodeliste. Rollekortene laves ofte, før rådgiveren findes: tilføj koden, når rådgiveren er bygget, og generér varianten Med AI igen. Koden på kortet, i lærervinduet og (som hash) i rådgiveren skal være den samme.
+- Koden står kun på sin egen rolles kort, aldrig i elevintroduktion, bilag eller lærerpakke. Rådgiverens fejlbesked og webtekster må kun skrive "fra dit kort", hvis koden står der (altså i varianten Med AI).
 
 ---
 
 ## Filproduktion
 
-Producér altid som separate .docx-filer:
+Producér altid disse tre Word-filer, og kun disse som standard (`[Spil]` er spillets navn):
 
-1. `Elevintroduktion_[Navn].docx` — Scenarie + regler + overblik (1 side)
-2. `Rollekort_[Navn]_Normal.docx` — Alle normale rollekort
-3. (kun hvis ønsket) `Rollekort_[Navn]_Stoette.docx` — Alle støtte-rollekort
-4. (kun hvis ønsket) `Rollekort_[Navn]_Staerk.docx` — Alle stærke rollekort
-5. `Laererguide_[Navn].docx` — Komplet lærerguide
+1. **`Elevpakke_[Spil]_Uden_AI.docx`:** alt samlet i én fil (elevintroduktion, bilag, rollekort og beslutningsskema), helt uden koder eller AI-henvisninger. Til 100 % skærmfrie lektioner.
+2. **`Elevpakke_[Spil]_Med_AI.docx`:** nøjagtig samme indhold, men med den 4-cifrede rådgiverkode trykt på rollekortene ("Rådgiverkode: XXXX") til lærere, der vil lade eleverne sparre med AI på mobilen.
+3. **`Laererpakke_[Spil]_Samlet.docx`:** lærerguide og cheatsheet samlet i ét dokument, så læreren kun printer ét hæfte til eget brug.
 
-Alternativt, hvis brugeren foretrækker: Alle rollekort i ét dokument med page breaks.
+Regler for de to elevpakker:
+- Navnene er "Uden AI" og "Med AI-rådgiver", ikke "Analog" og "Digital". Spillet foregår altid fysisk med papir, dialog og forhandling, og AI er en støtte ved siden af.
+- De to varianter ligger altid som to separate Word-filer og blandes aldrig i samme fil, så læreren undgår fejlprint og ikke skal vælge sidetal.
+- De bygges af samme data og samme kode med ét flag (`medAI`), så de ikke kan glide fra hinanden. Eneste forskel er rådgiverkoden på rollekortene.
+- Støtte- og stærkversion laves kun efter ønske og som egne filer i samme to varianter (fx `Elevpakke_[Spil]_Uden_AI_Stoette.docx`).
+- Antal rollekort at printe følger gruppeplanen (se nedenfor). Kortene i pakken er ét pr. rolle, og læreren printer det antal, planen viser.
 
 ---
 

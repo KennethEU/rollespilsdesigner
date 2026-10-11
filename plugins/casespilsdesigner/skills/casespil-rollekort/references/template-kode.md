@@ -14,6 +14,7 @@ Denne fil indeholder genbrugelig Node.js-kode til docx-generering af rollekort, 
 - Støtteversion-specifikke funktioner
 - Dokument-bygning
 - Lærermateriale / Cheatsheet — Two-table layout
+- Elevpakke i to varianter og samlet lærerpakke (dobbeltsidede rollekort, afprøvet)
 - Validerings- og preview-workflow
 - Typiske fejl at undgå
 
@@ -523,6 +524,140 @@ function qaBlock(num, question, answer, extras = {}, contentWidth) {
 // })
 ```
 
+## Elevpakke i to varianter og samlet lærerpakke
+
+Koden nedenfor er afprøvet: den bygger `Elevpakke_[Spil]_Uden_AI.docx`, `Elevpakke_[Spil]_Med_AI.docx` og `Laererpakke_[Spil]_Samlet.docx` af samme data, og kontrollen bekræfter, at Uden AI ikke indeholder koder eller AI-ord, at Med AI har præcis én kode pr. rolle, at indholdet ellers er ens, og at hvert rollekort fylder præcis 2 sider (forside og bagside). Den erstatter `roleHeader` og de enkeltsidede kort ovenfor som standard. Notelinjerne er en tabel med faste rækker, fordi tomme afsnit med bundkant smelter sammen til én linje.
+
+Datastrukturen (JSON) pr. rolle: `navn`, `titel`, `org`, `befoejelse`, `kode`, `kpi` (3 felter med `label` og `value`), `maal`, `baggrund`, `holdning`, `vaerdier`, `krav`, `argumenter`, `dilemmaer`, `skjult`, `begreber` (`begreb`, `forklaring`), `faser` (`fase`, `handling`). Pr. spil: `spil`, `intro`, `bilag` (`titel`, `tekst`), `roller`, `beslutning`, `guide` (`titel`, `afsnit`) og `cheatsheet` (`spoergsmaal`, `modelsvar`, `faglig_begrundelse`, `typisk_fejl`). Guide og cheatsheet har samme form som i lærer-assistentens bundt, så der er én kilde.
+
+```javascript
+// elevpakke.js: bygger to adskilte elevpakker af SAMME data. Kør: node elevpakke.js data.json udmappe
+const {
+  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+  AlignmentType, BorderStyle, WidthType, ShadingType, PageBreak, LevelFormat, HeightRule
+} = require('docx');
+const fs = require('fs');
+
+const PAGE_W = 11906, PAGE_H = 16838, MH = 1000, MV = 760;       // kompakte margener (top/bund, venstre/højre)
+const CW = PAGE_W - 2 * MV;                                      // indholdsbredde
+const PRIMARY = "1A3A6B", SECONDARY = "2A4A8B", LIGHT = "E8EEF8", YELLOW = "FFF3CC", WHITE = "FFFFFF", GREY = "CCCCCC";
+const pt = n => Math.round(n * 2);
+const nb = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" }, NB = { top: nb, bottom: nb, left: nb, right: nb };
+const tb = { style: BorderStyle.SINGLE, size: 1, color: GREY }, TB = { top: tb, bottom: tb, left: tb, right: tb };
+
+const run = (text, o = {}) => new TextRun({ text, font: "Arial", size: pt(o.size || 9), bold: !!o.bold, color: o.color || "222222" });
+const para = (text, o = {}) => new Paragraph({ spacing: { before: o.before ?? 0, after: o.after ?? 50 }, alignment: o.align, children: [run(text, o)] });
+const heading = text => new Paragraph({ spacing: { before: 110, after: 40 },
+  border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: PRIMARY, space: 1 } }, children: [run(text.toUpperCase(), { size: 9, bold: true, color: PRIMARY })] });
+const bullets = (items, ref) => items.map(t => new Paragraph({ numbering: { reference: ref, level: 0 }, spacing: { after: 30 }, children: [run(t)] }));
+const cell = (children, w, fill, borders = TB) => new TableCell({ borders, width: { size: w, type: WidthType.DXA },
+  shading: fill ? { fill, type: ShadingType.CLEAR } : undefined, margins: { top: 60, bottom: 60, left: 100, right: 100 }, children });
+const table = (rows, widths) => new Table({ width: { size: CW, type: WidthType.DXA }, columnWidths: widths, rows });
+const box = (title, lines, fill) => table([new TableRow({ children: [cell([para(title, { bold: true, color: PRIMARY }), ...lines.map(l => para(l))], CW, fill)] })], [CW]);
+
+// Banner: navn, titel og organisation. Rådgiverkoden står KUN i varianten Med AI (medAI = true).
+function banner(r, medAI) {
+  const sub = [r.titel, r.org, r.befoejelse].filter(Boolean).join(' | ') + (medAI ? ` | Rådgiverkode: ${r.kode}` : '');
+  return table([new TableRow({ children: [cell([para(r.navn, { size: 15, bold: true, color: WHITE, after: 20 }), para(sub, { size: 9.5, color: WHITE, after: 0 })], CW, PRIMARY, NB)] })], [CW]);
+}
+// KPI-bjælke med tre felter (fx pulje, stemmer/beføjelser, flertalskrav)
+function kpiBar(kpi) {
+  const w = Math.floor(CW / 3);
+  return table([new TableRow({ children: kpi.map(k => cell([para(k.label.toUpperCase(), { size: 7.5, bold: true, color: SECONDARY, after: 10 }), para(k.value, { size: 11, bold: true, color: PRIMARY, after: 0 })], w, LIGHT)) })], [w, w, w]);
+}
+// Notelinjer til elevens blyant: en tabel med faste rækker og kun bundkant. Tomme afsnit med bundkant smelter sammen til én linje.
+const LINE = { style: BorderStyle.SINGLE, size: 4, color: "999999" };
+const noteLines = n => table(Array.from({ length: n }, () => new TableRow({ height: { value: 440, rule: HeightRule.EXACT },
+  children: [new TableCell({ width: { size: CW, type: WidthType.DXA }, borders: { top: nb, left: nb, right: nb, bottom: LINE }, children: [para('', { after: 0 })] })] })), [CW]);
+const pageBreak = () => new Paragraph({ children: [new PageBreak()] });
+
+function roleFront(r, medAI) {
+  return [banner(r, medAI), para('', { after: 40 }), kpiBar(r.kpi),
+    heading('Mål'), para(r.maal), heading('Baggrund'), para(r.baggrund), heading('Holdning og værdier'), para(r.holdning),
+    ...bullets(r.vaerdier, 'bul'), heading('Initiativkrav og muligheder'), ...bullets(r.krav, 'bul'),
+    heading('Argumenter'), ...r.argumenter.map((a, i) => new Paragraph({ spacing: { after: 30 }, children: [run(`${i + 1}. `, { bold: true, color: PRIMARY }), run(a)] })),
+    heading('Dilemmaer'), ...bullets(r.dilemmaer, 'bul'), para('', { after: 40 }),
+    box('FORTROLIGT NOTAT (må ikke vises til de andre)', [r.skjult], YELLOW)];
+}
+function roleBack(r) {
+  const c1 = Math.floor(CW * 0.3), c2 = CW - c1;
+  const head = new TableRow({ children: [cell([para('FASE', { size: 8, bold: true, color: WHITE, after: 0 })], c1, SECONDARY), cell([para('DIN HANDLING', { size: 8, bold: true, color: WHITE, after: 0 })], c2, SECONDARY)] });
+  const rows = r.faser.map((f, i) => new TableRow({ children: [cell([para(f.fase, { size: 8.5, bold: true, color: PRIMARY, after: 0 })], c1, i % 2 ? WHITE : LIGHT), cell([para(f.handling, { size: 8.5, after: 0 })], c2, i % 2 ? WHITE : LIGHT)] }));
+  return [para(`${r.navn}: taktik og arbejdsark`, { size: 12, bold: true, color: PRIMARY, after: 60 }),
+    heading('Fagbegreber i spillet'), ...r.begreber.map(b => new Paragraph({ spacing: { after: 30 }, children: [run(b.begreb + ': ', { bold: true }), run(b.forklaring)] })),
+    heading('Faseguide'), table([head, ...rows], [c1, c2]),
+    heading('Dine forhandlingsnoter'), noteLines(r.noteLinjer || 16)];
+}
+
+// Hele elevpakken: Intro + Bilag + Rollekort (forside, bagside) + Beslutningsskema, i ÉN fil
+function elevpakkeBoern(d, medAI) {
+  const out = [para(d.spil, { size: 20, bold: true, color: PRIMARY, after: 80 }), heading('Introduktion'), ...d.intro.map(t => para(t, { after: 70 })), pageBreak()];
+  for (const b of d.bilag) out.push(heading(b.titel), ...b.tekst.map(t => para(t, { after: 60 })));
+  out.push(pageBreak());
+  for (const r of d.roller) out.push(...roleFront(r, medAI), pageBreak(), ...roleBack(r), pageBreak());
+  out.push(heading('Beslutningsskema'), ...d.beslutning.map(t => para(t, { after: 70 })), noteLines(8));
+  return out;
+}
+async function build(d, medAI, fil) {
+  const bullet = { reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 360, hanging: 240 } } } }] };
+  const doc = new Document({ numbering: { config: [bullet] }, styles: { default: { document: { run: { font: 'Arial', size: pt(9) } } } },
+    sections: [{ properties: { page: { size: { width: PAGE_W, height: PAGE_H }, margin: { top: MH, bottom: MH, left: MV, right: MV } } }, children: elevpakkeBoern(d, medAI) }] });
+  fs.writeFileSync(fil, await Packer.toBuffer(doc));
+}
+
+// Lærerpakken: Lærerguide og Cheatsheet i ÉT hæfte. Samme datastruktur som cockpittets bundt (guide og cheatsheet).
+async function buildLaererpakke(d, fil) {
+  const out = [para(`Lærerpakke: ${d.spil}`, { size: 20, bold: true, color: PRIMARY, after: 80 }), heading('Lærerguide')];
+  for (const s of d.guide) out.push(para(s.titel, { size: 11, bold: true, color: SECONDARY, before: 100, after: 30 }), ...s.afsnit.map(t => para(t, { after: 60 })));
+  out.push(pageBreak(), heading('Cheatsheet'));
+  d.cheatsheet.forEach((q, i) => {
+    const w1 = Math.floor(CW * 0.22), w2 = CW - w1;
+    const rij = (k, v, fill) => new TableRow({ children: [cell([para(k, { size: 8.5, bold: true, color: PRIMARY, after: 0 })], w1, fill), cell([para(v, { size: 9, after: 0 })], w2, fill)] });
+    out.push(para(`${i + 1}. ${q.spoergsmaal}`, { bold: true, before: 90, after: 30 }), table([rij('Modelsvar', q.modelsvar, LIGHT), rij('Faglig begrundelse', q.faglig_begrundelse || '', WHITE), rij('Typisk elevfejl', q.typisk_fejl || '', YELLOW)], [w1, w2]));
+  });
+  const doc = new Document({ styles: { default: { document: { run: { font: 'Arial', size: pt(9) } } } },
+    sections: [{ properties: { page: { size: { width: PAGE_W, height: PAGE_H }, margin: { top: 1200, bottom: 1200, left: MV, right: MV } } }, children: out }] });
+  fs.writeFileSync(fil, await Packer.toBuffer(doc));
+}
+module.exports = { build, buildLaererpakke };
+if (require.main === module) {
+  const d = JSON.parse(fs.readFileSync(process.argv[2], 'utf8')), ud = process.argv[3];
+  const navn = d.spil.replace(/[^\p{L}\p{N}]+/gu, '_');
+  (async () => {
+    await build(d, false, `${ud}/Elevpakke_${navn}_Uden_AI.docx`);      // helt uden koder og AI-henvisninger
+    await build(d, true, `${ud}/Elevpakke_${navn}_Med_AI.docx`);        // samme indhold + "Rådgiverkode: XXXX" på rollekortene
+    await buildLaererpakke(d, `${ud}/Laererpakke_${navn}_Samlet.docx`); // Lærerguide + Cheatsheet i én fil
+  })();
+}
+```
+
+Kontrollen (kræver `unzip`, `soffice` og `pdfinfo`). Kør den efter hver generering, og se mindst én forside og én bagside som billede (`pdftoppm -jpeg -r 60`):
+
+```javascript
+// check.cjs: kontrollerer de to elevpakker. Kør: node check.cjs data.json udmappe  (kræver unzip, soffice og pdfinfo)
+const fs = require('fs'), { execSync } = require('child_process'), assert = require('assert');
+const d = JSON.parse(fs.readFileSync(process.argv[2], 'utf8')), ud = process.argv[3];
+const navn = d.spil.replace(/[^\p{L}\p{N}]+/gu, '_');
+const text = f => execSync(`unzip -p "${f}" word/document.xml`, { encoding: 'utf8' }).replace(/<w:p[ >]/g, '\n<w:p ').replace(/<[^>]+>/g, '');
+const pages = f => { execSync(`soffice --headless --convert-to pdf --outdir "${ud}" "${f}" >/dev/null 2>&1`); return +execSync(`pdfinfo "${f.replace(/\.docx$/, '.pdf')}"`, { encoding: 'utf8' }).match(/Pages:\s+(\d+)/)[1]; };
+const uden = `${ud}/Elevpakke_${navn}_Uden_AI.docx`, med = `${ud}/Elevpakke_${navn}_Med_AI.docx`;
+const tu = text(uden), tm = text(med);
+let failed = 0; const ok = (c, t) => { console.log((c ? 'OK    ' : 'FEJL  ') + t); if (!c) failed++; };
+ok(!/Rådgiverkode|rådgiver|\bAI\b/i.test(tu), 'Uden AI: ingen kode, rådgiver eller AI-henvisning');
+ok(d.roller.every(r => !tu.includes(r.kode)), 'Uden AI: ingen af de 4-cifrede koder står i filen');
+ok((tm.match(/Rådgiverkode: \d{4}/g) || []).length === d.roller.length, `Med AI: præcis én "Rådgiverkode: XXXX" pr. rolle (${d.roller.length})`);
+ok(d.roller.every(r => tm.includes('Rådgiverkode: ' + r.kode)), 'Med AI: hver rolle har sin egen kode');
+const strip = t => t.replace(/ \| Rådgiverkode: \d{4}/g, '');
+ok(strip(tm) === tu, 'Samme indhold i begge filer, når koderne fjernes');
+const forventet = 1 + 1 + 2 * d.roller.length + 1;                        // intro, bilag, forside + bagside pr. rolle, beslutningsskema
+ok(pages(uden) === forventet && pages(med) === forventet, `Begge filer er ${forventet} sider: hvert rollekort fylder præcis forside + bagside`);
+ok(fs.existsSync(uden) && fs.existsSync(med) && uden !== med, 'To separate Word-filer');
+const lp = `${ud}/Laererpakke_${navn}_Samlet.docx`, tl = fs.existsSync(lp) ? text(lp) : '';
+ok(/lærerguide/i.test(tl) && /cheatsheet/i.test(tl) && d.guide.every(s => tl.includes(s.titel)) && d.cheatsheet.every(q => tl.includes(q.spoergsmaal)), 'Lærerpakken er én fil med både lærerguide og cheatsheet');
+ok(!/Rådgiverkode/.test(tl), 'Lærerpakken indeholder ingen elevers rådgiverkoder');
+console.log(failed ? `\n${failed} fejl` : '\nAlt bestået'); process.exit(failed ? 1 : 0);
+```
+
 ## Validerings- og preview-workflow
 
 ```bash
@@ -548,7 +683,7 @@ pdftoppm -jpeg -r 200 output.pdf preview
 
 **Tekniske fejl:**
 1. **Dobbelt-tekst fra sed:** Undgå at bruge sed til teksterstatning i docx-scripts — det skaber fejl. Skriv altid korrekt tekst direkte i JavaScript-strengen.
-2. **Sideoverflow:** Hvert rollekort SKAL passe på præcis 1 A4-side (normal og stærk) eller 2 sider (støtte). Preview ALTID med pdftoppm.
+2. **Sideoverflow:** Hvert normalt rollekort SKAL passe på præcis 2 A4-sider (forside og bagside). Støtte kan fylde mere, og stærk må være 1 side, hvis læreren har bedt om det. Preview ALTID med pdftoppm, og tæl siderne med `pdfinfo`.
 3. **Encoding:** Sørg for at Node.js-filen er gemt som UTF-8. Test med `node -e "console.log('æøå')"` først.
 4. **Margin-mismatch:** Brug de korrekte margener for dokumenttypen (MH_ROLLE for rollekort, MH_GUIDE for lærerguide, MH_INTRO for elevintro).
 5. **Sidestørrelse:** Sæt altid A4 eksplicit (`11906 x 16838` DXA). Stol ikke på standardværdien.

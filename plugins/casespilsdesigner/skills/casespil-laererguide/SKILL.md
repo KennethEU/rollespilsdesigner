@@ -54,9 +54,10 @@ Tabel med: Rolle | Organisation | Stemmer | Særlig beføjelse
 ### 5. Forberedelse (lærer)
 Tjekliste med:
 - [ ] Åbn lærer-assistenten med dit personlige adgangslink fra din skolemail (et 1-klik link, gyldigt i 7 dage, indtil datoen i mailen). Er det udløbet, bestiller du et nyt på siden med samme mailadresse. Hent materialerne som ZIP inde i cockpittet. Videresend ikke linket, og læg ikke materialerne på en fælles side, eleverne kan se
+- [ ] Print kun denne ene lærerpakke til eget brug: `Laererpakke_[Spil]_Samlet.docx` (lærerguide og cheatsheet i ét hæfte)
 - [ ] Print elevintroduktion (1 pr. elev)
 - [ ] Print rollekort (de versioner, der er lavet). Tæl dem ud fra gruppeplanen: ét kort pr. elev på rollen plus ét til hvert bord, hvor rollen er slået sammen med en anden
-- [ ] Vælg form og skriv tallene: papir (alt på papir), hybrid (kort på papir, værktøjer digitalt) eller digital (kort og bilag på skærm). Angiv, hvad der ikke må ligge hos eleverne (fx fortrolige bilag og lærersæt)
+- [ ] Vælg elevpakke og skriv tallene: `Elevpakke_[Spil]_Uden_AI.docx` (alt på papir, ingen koder eller AI, til skærmfrie lektioner) eller `Elevpakke_[Spil]_Med_AI.docx` (samme indhold med rådgiverkoden på rollekortene, til elever der sparrer med AI på mobilen). Print kun den ene, og bland dem ikke. Rollekortene er dobbeltsidede (forside og bagside), så print dem tosidet. Angiv, hvad der ikke må ligge hos eleverne (fx fortrolige bilag og lærersæt)
 - [ ] Stil lokalet op
 - [ ] Test evt. digitalt værktøj
 - [ ] Elevintroduktion uddeles FØR rollekort
